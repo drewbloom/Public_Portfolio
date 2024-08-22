@@ -1,5 +1,5 @@
 # Public_Projects
-This repository contains a series of project demonstrating my ability to tackle tasks and arrive at solutions.
+Hey, I'm Drew Bloom, and this repository contains a series of project demonstrating my ability to tackle tasks and arrive at solutions.
 
 # Repository Folders
 Each folder contains a particular project with a quick summary and its corresponding files.

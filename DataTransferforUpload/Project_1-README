@@ -4,24 +4,24 @@ It also helps the organization avoid human errors and pinpoint incompatibility e
 Here is a link to the Google Doc for you to test - Make a copy for yourself to copy the script, then use the "Upload Sheet" custom menu located on the top toolbar to run the script:
 https://docs.google.com/document/d/15JAJeGi8zTIsRZ5oqzHHdur8zsy_MTCRp460gh1htEU/edit?usp=sharing
 
-Situation:  
+# Situation:  
 Team members in Assessment branch were spending hours each month copying and pasting fields for new questions authored in a shared Google Doc.
 The team moved the text into one sheet to transpose it and edit the text to match formatting requirements for upload.
 Then, the team uploaded the questions and often discovered additional unchecked errors.
 
-Task:  
+# Task:  
 Create a full automation of data transfer from collaboration document into an upload sheet for review and csv download
 
-Action:  
+# Action:  
 Using a total of 10 hours of work time, I met with Assessment team members to find out the needs of the project.
 I was provided the three documents used in the current process and worked independently to create a demo of my solution.  I met again with one team member for initial feedback, then returned to a second team member for final approval and deployment. Total turn time was 2 work days with a total hour commitment by all parties equal to 10 labor hours.
 
-Result:  
+# Result:  
 Created a fully automated process to bypass transposing sheet and create upload document from Team Collaboration document, saving est. 10 hrs per month for Assessment Team staff
 
 Below is the summary of functionality for the final product:
 
-Question Upload Automation
+# Question Upload Automation
 This script takes the data from a collaboratively authored document and formats it in a Google Sheet so that the data is instantly ready for final review, download as a csv, and upload to the organization’s Learning Management System (LMS).
 
 It saves question authoring staff from copying and pasting almost every field of 70 tables (~90 pages) from this document into a Google Sheet manually (a time commitment of multiple hours and prone to errors)

@@ -3,5 +3,7 @@ Project 3 is a data consolidation project completed for use by a 7-person team.
 Situation:
 The organization's current metadata downloads did not give the educational organization's curriculum team enough data to easily review and author new content without engaging in time-consuming manual searches across numerous webpages.  Some metadata existed that was useful, while other data was inaccessible via downloads.
 
+Our dev team was too overcommitted to other fixes to even update an autosave feature on our webpage - a request for this data through our own data warehousing was left unanswered for over a month.  Because the team needed this data extracted and consolidated, it was decided that webscraping was the best approach.
+
 Task:
 Combine existing, easily-accessible data with webscraped data for additional fields into one database, allowing curriculum team members to query data as needed for their reviewing and authoring.

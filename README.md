@@ -1,4 +1,4 @@
-# Public_Projects
+# Public_Portfolio
 Hey, I'm Drew Bloom, and this repository contains a series of projects demonstrating my ability to independently tackle tasks and create automation solutions.
 
 # Repository Folders

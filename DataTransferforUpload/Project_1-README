@@ -1,6 +1,9 @@
 Project 1 is a Google Apps Script macro designed to save hours of manual data entry.
 It also helps the organization avoid human errors and pinpoint incompatibility errors between the upload file and web application.
 
+Here is a link to the Google Doc for you to test - Make a copy for yourself to copy the script, then use the "Upload Sheet" custom menu located on the top toolbar to run the script:
+https://docs.google.com/document/d/15JAJeGi8zTIsRZ5oqzHHdur8zsy_MTCRp460gh1htEU/edit?usp=sharing
+
 Situation:  
 Team members in Assessment branch were spending hours each month copying and pasting fields for new questions authored in a shared Google Doc.
 The team moved the text into one sheet to transpose it and edit the text to match formatting requirements for upload.

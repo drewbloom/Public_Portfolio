@@ -1,6 +1,8 @@
 Project 3 is a data consolidation project completed for use by internal users with varying levels of permissions.
-You can see a demonstration of the webpage functionality by following this link:
+You can see the simple web UI by following this link:
 https://script.google.com/macros/s/AKfycbxlK4TRcVwkyYbs2tqTxfRAla8hOzVyNKa6JbzP4lo/dev
+
+And you can request to see a scrubbed copy of the database if you want to see any of its actual functionality.
 
 # Situation:
 The organization's current metadata downloads did not give the educational organization's curriculum team enough data to easily review and author new content without engaging in time-consuming manual searches across numerous webpages.  Some metadata existed that was useful, while other data was inaccessible via downloads.

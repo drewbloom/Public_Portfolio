@@ -4,6 +4,15 @@
   <base target="_top">
   <!-- Tailwind CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Chart.js -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Program Objectives Report</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- jsPDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <!-- html2pdf library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
   <style>
     /* Background styles */
     .subtle-background {
@@ -19,6 +28,13 @@
     .header {
       background-color: #007acc;
       color: white;
+    }
+    .fade-in { 
+      opacity: 0; 
+    }
+    .fade-in-visible { 
+      opacity: 1; 
+      transition: opacity 1s; 
     }
   </style>
 </head>
@@ -46,7 +62,7 @@
 
   <!-- Form Container -->
   <div class="mt-32 w-3/4 p-6 bg-white shadow-md rounded-lg mx-auto">
-    <form id="fileForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+    <form id="processForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
       <div>
         <label for="institution" class="block text-sm font-medium text-gray-700">Enter your institution name:</label>
         <input type="text" id="institution" name="institution" required class="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
@@ -63,50 +79,277 @@
       </div>
 
       <div>
-        <input type="submit" value="Generate Report" class="py-2 px-4 bg-blue-500 text-white rounded-md shadow-sm hover:bg-blue-700 cursor-pointer">
+        <input type="submit" id="submitButton" value="Generate Report" class="py-2 px-4 bg-blue-500 text-white rounded-md shadow-sm hover:bg-blue-700 cursor-pointer">
+        <!-- Because buttons in forms default to type=submit, declare type=button to avoid this button triggering the onsubmit event -->
+        <button type="button" onclick="downloadPDF()" id="download" class="ml-4 py-2 px-4 bg-green-500 text-white rounded-md shadow-sm hover:bg-green-700 cursor-pointer" style="display: none;">Download this report as a PDF</button>
       </div>
     </form>
 
     <!-- Loading Message -->
     <div id="loadingMessage" class="mt-4 text-blue-500" style="display: none;">
-      Extracting text...
+      Generating your report, this could take some time...
     </div>
 
-    <!-- Results/Error Message Container -->
-    <div id="resultsContainer" class="mt-4 max-h-[60vh] overflow-y-auto mx-auto bg-white rounded-lg shadow p-4">
-      <div id="results" class="table-wrapper text-red-500"></div>
+    <!-- Results Container - Experiment with hiding " hidden" and trying to unhide programmatically - hasn't worked -->
+    <div id="resultsContainer" class="mt-4 w-3/4 p-6 bg-white rounded-lg mx-auto hidden"> <!-- Previous: <div id="resultsContainer" class="container mx-auto px-4 py-8 space-y-12" style="display: block;"> -->
+
+      <!-- Add the hidden input field for sheetName -->
+      <input type="hidden" id="sheetName" value="">
+
+      <!-- Section 1: Learning Objectives -->
+      <section id="objectives" class="fade-in">
+        <h2 class="text-2xl font-bold mb-2">Located <span id="objectives-count"></span> program objectives from the file:</h2>
+        <hr class="mb-4">
+        <ol id="objectives-list" class="list-decimal list-inside space-y-2"></ol>
+      </section>
+
+      <!-- Section 2: 3D Pie Chart for Matched vs Unmatched Objectives -->
+      <section id="matched-unmatched-chart" class="fade-in">
+        <h2 class="text-2xl font-bold mb-4 mt-12">Matched vs Unmatched Learning Objectives</h2>
+        <hr class="mb-4">
+        <div style="width: 50%; margin: 0 auto;">
+          <canvas id="matchChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Section 3: Match Quality Table -->
+      <section id="match-quality" class="fade-in">
+        <h2 class="text-2xl font-bold mb-4 mt-12">Match Quality</h2>
+        <hr class="mb-4">
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white border">
+            <tbody id="quality-table" class="divide-y divide-gray-200"></tbody>
+          </table>
+          <br>
+          <br>
+        </div>
+      </section>
+
+      <!-- Section 4: Match Quality Pie Chart -->
+      <section id="match-quality-chart" class="fade-in">
+        <h2 class="text-2xl font-bold mb-4">Match Quality Distribution</h2>
+        <hr class="mb-4">
+        <div style="width: 50%; margin: 0 auto;">
+          <canvas id="qualityChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Section 5: Excellent Matches -->
+      <section id="excellent-matches" class="fade-in">
+        <h2 class="text-2xl font-bold mb-4 mt-12">Excellent Matches</h2>
+        <hr class="mb-4">
+        <ol id="excellent-list" class="list-disc list-inside space-y-2"></ol>
+      </section>
+
+      <!-- Section 6: Top 5 Most-Aligned Program Objectives -->
+      <section id="top-5-aligned" class="fade-in">
+        <h2 class="text-2xl font-bold mb-4 mt-12">Top 5 Most-Aligned Program Objectives</h2>
+        <hr class="mb-4">
+        <ol id="top-aligned-list" class="list-decimal list-inside space-y-2"></ol>
+      </section>
+
+      <!-- Section 7: MEPO Areas for Improvement -->
+      <section id="mepo-improvement" class="fade-in">
+        <h2 class="text-2xl font-bold mb-4 mt-12">MEPO Areas for Improvement</h2>
+        <hr class="mb-4">
+        <p id="improvement-count" class="mb-2"></p>
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white border">
+            <tbody id="improvement-list" class="divide-y divide-gray-200"></tbody>
+          </table>
+        </div>
+      </section>
+    
     </div>
   </div>
 
   <script>
+    const fadeInElements = document.querySelectorAll('.fade-in');
+    
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('fade-in-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    fadeInElements.forEach(element => {
+      observer.observe(element);
+    });
+
+    // Flag to prevent doubled run of function from one browser context
+    let isSubmitting = false;
+
     function handleFormSubmit(event) {
       event.preventDefault();
 
+      // Flag to prevent double submission and concurrent runs
+      if (isSubmitting) return;
+      isSubmitting = true;
+
+      // Disable the submit button during run to prevent multiple submissions
+      document.getElementById('submitButton').disabled = true;
+
       const formData = new FormData(event.target);
-      const values = Object.fromEntries(formData.entries());
+      const processData = Object.fromEntries(formData.entries());
+      processData.isPdf = (formData.get('isPdf') === 'true');
 
-      const loadingMessage = document.getElementById('loadingMessage');
-      const resultsDiv = document.getElementById('results');
-      loadingMessage.style.display = 'block';
-      resultsDiv.innerHTML = '';
+      // Show the loading message
+      document.getElementById('loadingMessage').style.display = 'block';
 
-      google.script.run.withSuccessHandler(function(response) {
-        loadingMessage.style.display = 'none';
-        displayResults(response);
-      }).processForm(values).withFailureHandler(function(error) {
-        loadingMessage.style.display = 'none';
-        resultsDiv.textContent = 'An error occurred: ' + error.message;
+      google.script.run
+        .withSuccessHandler(sheetName => {
+          // Set the returned sheet name in the hidden input field
+          document.getElementById('sheetName').value = sheetName;
+
+          // Load Data with the new sheet name
+          google.script.run.withSuccessHandler(renderData).fetchSheetData(sheetName);
+
+          // reset Submit button, reset flag
+          document.getElementById('submitButton').disabled = false;
+          isSubmitting = false;
+        })
+        .withFailureHandler(error => {
+          console.error('Error fetching sheet data:', error.message);
+
+          document.getElementById('loadingMessage').style.display = 'none';
+          document.getElementById('results').innerText = 'An error occurred while fetching sheet data.';
+
+          // reset Submit button, reset flag
+          document.getElementById('submitButton').disabled = false;
+          isSubmitting = false;
+        })
+        .processForm(processData);
+    }
+
+
+
+    // Form submission handler
+    document.getElementById('processForm').addEventListener('submit', handleFormSubmit);
+
+    function renderData(data) {
+      // Hide the loading message and show the results container
+      document.getElementById('loadingMessage').style.display = 'none';
+      // Added logic to hide even if buttons retrigger the startup - it won't display twice
+      document.getElementById('loadingMessage').classList.add('hidden');
+
+      // Section 1: Objectives
+      document.getElementById('objectives-count').innerText = data.objectiveCount;
+      const objectivesList = document.getElementById('objectives-list');
+      objectivesList.innerHTML = ''; // Clear any existing content
+      
+      // Create a fragment to improve performance on large lists
+      const fragment = document.createDocumentFragment();      
+      
+      data.objectives.forEach(obj => {
+        let li = document.createElement('li');
+        li.innerText = obj;
+        fragment.appendChild(li);
       });
+
+      // Append fragment to the DOM in one go
+      objectivesList.appendChild(fragment);
+
+      // Check if the Fade-in class is already added, if not, add it
+      const section1 = document.getElementById('objectives');
+      if (!section1.classList.contains('fade-in-visible')) {
+        section1.classList.add('fade-in-visible');
+      }
+
+      // Section 2: Matched vs. Unmatched Chart
+      const matchCtx = document.getElementById('matchChart').getContext('2d');
+      new Chart(matchCtx, {
+        type: 'pie',
+        data: {
+          labels: ['Matched', 'Unmatched'],
+          datasets: [{
+            data: data.matchCounts,
+            backgroundColor: ['#4CAF50', '#F44336'],
+          }]
+        },
+        options: { responsive: true }
+      });
+
+      // Section 3: Match Quality Table
+      const qualityTable = document.getElementById('quality-table');
+      qualityTable.innerHTML = ''; // Clear any existing content
+      data.qualityLabels.forEach((label, index) => {
+        let row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap cursor-pointer">${label}</td>
+          <td class="px-6 py-4 whitespace-nowrap cursor-pointer">${data.qualityValues[index]}</td>
+        `;
+        qualityTable.appendChild(row);
+      });
+
+      // Section 4: Match Quality Pie Chart
+      const qualityCtx = document.getElementById('qualityChart').getContext('2d');
+      new Chart(qualityCtx, {
+        type: 'pie',
+        data: {
+          labels: data.qualityLabels,
+          datasets: [{
+            data: data.qualityValues,
+            backgroundColor: ['#FFCA28', '#29B6F6', '#AB47BC'],
+          }]
+        },
+        options: { responsive: true }
+      });
+
+      // Section 5: Excellent Matches
+      const excellentList = document.getElementById('excellent-list');
+      excellentList.innerHTML = ''; // Clear any existing content
+      data.excellentMatches.forEach(match => {
+        let li = document.createElement('li');
+        const parts = match.split(':');
+        li.innerHTML = `<strong>${parts[0]}</strong><br><br>AAMC Match: ${parts[1]}`;
+        excellentList.appendChild(li);
+      });
+
+      // Section 6: Top 5 Most-Aligned Program Objectives
+      const topAlignedList = document.getElementById('top-aligned-list');
+      topAlignedList.innerHTML = ''; // Clear any existing content
+      data.topAligned.forEach(obj => {
+        let li = document.createElement('li');
+        li.innerHTML = obj;
+        topAlignedList.appendChild(li);
+      });
+
+      // Section 7: MEPO Areas for Improvement
+      document.getElementById('improvement-count').innerText = data.improvementCount;
+      const improvementList = document.getElementById('improvement-list');
+      improvementList.innerHTML = ''; // Clear any existing content
+      data.improvements.forEach(improvement => {
+        let row = document.createElement('tr');
+        row.innerHTML = `<td class="px-6 py-4 whitespace-nowrap cursor-pointer">${improvement}</td>`;
+        improvementList.appendChild(row);
+      });
+
+      // Check if the Fade-in class is already added, if not, add it
+      if (!improvementList.classList.contains('fade-in-visible')) {
+        improvementList.classList.add('fade-in-visible');
+      }
+
+      // Reveal results container
+      const resultsContainer = document.getElementById('resultsContainer');
+      resultsContainer.classList.remove('hidden');
+
+      // Ensure the fade-in effect is applied
+      setTimeout(() => {
+        resultsContainer.classList.add('fade-in-visible');
+      }, 200);  // Add a slight delay for a smoother transition
+
+      // Show the "Download PDF" button after the report is generated
+      document.getElementById('download').style.display = 'inline-block';
     }
 
-    function displayResults(text) {
-      const resultsDiv = document.getElementById('results');
-      resultsDiv.innerHTML = '';
-      const paragraph = document.createElement('p');
-      paragraph.textContent = text;
-      paragraph.className = "text-gray-700";
-      resultsDiv.appendChild(paragraph);
+    function downloadPDF() {
+      const element = document.getElementById('resultsContainer');
+      html2pdf().from(element).save();
     }
+
   </script>
 </body>
 </html>

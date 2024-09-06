@@ -429,8 +429,8 @@ class WebScraper:
 
     def clean_text_content(self, text_content):
         # Remove "CASE SYNOPSIS" from the front of the synopses
-        text_content = re.sub(r"\bCASE SYNOPSIS\b", "", text_content)
-        text_content = re.sub(r"\bTEACHING POINT\b", "", text_content)
+        text_content = re.sub(r"CASE SYNOPSIS", "", text_content)
+        text_content = re.sub(r"TEACHING POINT", "", text_content)
         # Add a colon and space after specific header
         text_content = re.sub(r"(Case Synopsis)([A-Z])", r"\1: \2", text_content)
         text_content = re.sub(r"(Teaching Point)([A-Z])", r"\1: \2", text_content)

@@ -1,5 +1,5 @@
 # Public_Portfolio
-Hey, I'm Drew Bloom, and this repository contains a series of projects demonstrating my ability to independently tackle tasks and create automation solutions.
+Hey, I'm Drew Bloom, and this repository contains a series of projects demonstrating my ability to work with webpages, various AI models and prompting techniques, and automation solutions with Google Apps Scripts and Playwright.
 
 # Repository Folders
 Each folder contains a particular project with a quick summary and its corresponding files.

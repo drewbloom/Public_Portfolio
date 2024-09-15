@@ -4,11 +4,13 @@
   <base target="_top">
   <!-- Tailwind CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <!-- Chart.js -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Program Objectives Report</title>
+  <!-- chartJS Library -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- datalabels plugin for chartjs -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
   <!-- jsPDF Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
   <!-- html2pdf library -->
@@ -29,13 +31,36 @@
       background-color: #007acc;
       color: white;
     }
+
     .fade-in { 
       opacity: 0; 
     }
+
     .fade-in-visible { 
       opacity: 1; 
       transition: opacity 1s; 
     }
+
+    /* Added styling for attempted use by charts, remove if deprecated after testing / debugging */
+    .fixed-label {
+      width: 50%; /* Adjusted to take left half */
+      text-align: left;
+      word-wrap: break-words;
+    }
+
+    .chartjs-tooltip {
+      max-width: 100%;
+      white-space: normal; /* Allows wrapping */
+    }
+
+    .chartjs-tooltip .label {
+      white-space: pre-wrap; /* Helps retain new-line formatting */
+    }
+
+    .subline {
+      margin-left: 30px; /* Adjust the value as needed */
+    }
+
   </style>
 </head>
 <body class="subtle-background flex flex-col items-center justify-center min-h-screen">
@@ -54,14 +79,27 @@
         </svg>
       </div>
       <div>
-        <h1 class="text-2xl font-semibold text-white">Aquifer MEPO-AAMC Report Generator</h1>
-        <p class="text-sm text-gray-200">Source: AAMC/MEPO Comparison Reporting</p>
+        <h1 class="text-2xl font-semibold text-white">2024 Wellspring AAMC Workshop - Report Generator</h1>
+        <p class="text-sm text-gray-200">Comparing Your Program Objectives to New AAMC Competencies</p>
       </div>
     </div>
   </div>
 
   <!-- Form Container -->
   <div class="mt-32 w-3/4 p-6 bg-white shadow-md rounded-lg mx-auto">
+    
+    <!-- Disclaimer / Info Container - Turn to hidden once report generation is finished, default to displayed and shown -->
+    <div id="infoContainer" class="mt-4 w-3/4 p-6 bg-white rounded-lg mx-auto border border-gray-300 shadow-md">
+      <section id="disclaimer" class="fade-in fade-in-visible">
+        <h2 class="text-2xl font-bold mb-2 text-center">How does it work?</h2>
+        <hr class="mb-4">
+        <p>Your file is read by an AI to locate your program objectives. Because there may be errors or inconsistencies due to the AI reader, the objectives located will be included below for your review. Using a text comparison model, those objectives are compared to the new AAMC competencies, and the results are displayed on the webpage below.  You can download the webpage as a pdf after the report is generated.</p>
+        <br>
+        <p>By hitting <span class="text-red-500 font-bold">"Generate Report"</span>, you agree to allow Aquifer to compare your program objectives to the new AAMC competencies using a text comparison model and retain the resulting data for future use.</p>
+      </section>
+    </div>
+    <br>
+    
     <form id="processForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
       <div>
         <label for="institution" class="block text-sm font-medium text-gray-700">Enter your institution name:</label>
@@ -90,44 +128,45 @@
       Generating your report, this could take some time...
     </div>
 
-    <!-- Results Container - Experiment with hiding " hidden" and trying to unhide programmatically - hasn't worked -->
-    <div id="resultsContainer" class="mt-4 w-3/4 p-6 bg-white rounded-lg mx-auto hidden"> <!-- Previous: <div id="resultsContainer" class="container mx-auto px-4 py-8 space-y-12" style="display: block;"> -->
+    <!-- Results Container - Defaults to hidden -->
+    <div id="resultsContainer" class="mt-4 w-3/4 p-6 bg-white rounded-lg mx-auto border border-gray-300 rounded hidden">
 
       <!-- Add the hidden input field for sheetName -->
       <input type="hidden" id="sheetName" value="">
 
       <!-- Section 1: Learning Objectives -->
-      <section id="objectives" class="fade-in">
-        <h2 class="text-2xl font-bold mb-2">Located <span id="objectives-count"></span> program objectives from the file:</h2>
+      <section id="objectives" class=""> <!-- Removed "fade-in" classes so the PDF downloads without fully scrolling the page, modify as needed if this breaks the display -->
+        <h2 class="text-2xl font-bold mb-2 text-center">Located <span id="objectives-count"></span> program objectives from the file:</h2>
         <hr class="mb-4">
         <ol id="objectives-list" class="list-decimal list-inside space-y-2"></ol>
       </section>
 
       <!-- Section 2: 3D Pie Chart for Matched vs Unmatched Objectives -->
-      <section id="matched-unmatched-chart" class="fade-in">
-        <h2 class="text-2xl font-bold mb-4 mt-12">Matched vs Unmatched Learning Objectives</h2>
+      <section id="matched-unmatched-chart" class="">
+        <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Matched vs Unmatched Learning Objectives</h2>
         <hr class="mb-4">
         <div style="width: 50%; margin: 0 auto;">
           <canvas id="matchChart"></canvas>
         </div>
       </section>
 
-      <!-- Section 3: Match Quality Table -->
-      <section id="match-quality" class="fade-in">
-        <h2 class="text-2xl font-bold mb-4 mt-12">Match Quality</h2>
+      <!-- Section 3: AAMC Matches - Horizontal Bar Charts -->
+      <section id="aamc-bar-charts" class="">
+        <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Matches by AAMC Competency</h2>
         <hr class="mb-4">
-        <div class="overflow-x-auto">
-          <table class="min-w-full bg-white border">
-            <tbody id="quality-table" class="divide-y divide-gray-200"></tbody>
-          </table>
-          <br>
-          <br>
+        <div id="charts-container">
+          <canvas id="chart1"></canvas>
+          <canvas id="chart2"></canvas>
+          <canvas id="chart3"></canvas>
+          <canvas id="chart4"></canvas>
+          <canvas id="chart5"></canvas>
+          <canvas id="chart6"></canvas>
         </div>
       </section>
 
       <!-- Section 4: Match Quality Pie Chart -->
-      <section id="match-quality-chart" class="fade-in">
-        <h2 class="text-2xl font-bold mb-4">Match Quality Distribution</h2>
+      <section id="match-quality-chart" class="">
+        <h2 class="text-2xl font-bold mb-4 text-center">Match Quality Distribution</h2>
         <hr class="mb-4">
         <div style="width: 50%; margin: 0 auto;">
           <canvas id="qualityChart"></canvas>
@@ -135,25 +174,25 @@
       </section>
 
       <!-- Section 5: Excellent Matches -->
-      <section id="excellent-matches" class="fade-in">
-        <h2 class="text-2xl font-bold mb-4 mt-12">Excellent Matches</h2>
+      <section id="excellent-matches" class="">
+        <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Excellent Matches List</h2>
         <hr class="mb-4">
-        <ol id="excellent-list" class="list-disc list-inside space-y-2"></ol>
+        <ol id="excellent-list" class="list-decimal list-inside space-y-2"></ol>
       </section>
 
       <!-- Section 6: Top 5 Most-Aligned Program Objectives -->
-      <section id="top-5-aligned" class="fade-in">
-        <h2 class="text-2xl font-bold mb-4 mt-12">Top 5 Most-Aligned Program Objectives</h2>
+      <section id="top-5-aligned" class="">
+        <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Program Objectives with Most AAMC Matches</h2>
         <hr class="mb-4">
         <ol id="top-aligned-list" class="list-decimal list-inside space-y-2"></ol>
       </section>
 
       <!-- Section 7: MEPO Areas for Improvement -->
-      <section id="mepo-improvement" class="fade-in">
-        <h2 class="text-2xl font-bold mb-4 mt-12">MEPO Areas for Improvement</h2>
+      <section id="mepo-improvement" class="">
+        <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Least-Matched Program Objectives</h2>
         <hr class="mb-4">
         <p id="improvement-count" class="mb-2"></p>
-        <div class="overflow-x-auto">
+        <div class="overflow-hidden"> <!-- Changed from overflow-x-auto to force wrapping for PDF download -->
           <table class="min-w-full bg-white border">
             <tbody id="improvement-list" class="divide-y divide-gray-200"></tbody>
           </table>
@@ -164,20 +203,6 @@
   </div>
 
   <script>
-    const fadeInElements = document.querySelectorAll('.fade-in');
-    
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('fade-in-visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1 });
-
-    fadeInElements.forEach(element => {
-      observer.observe(element);
-    });
 
     // Flag to prevent doubled run of function from one browser context
     let isSubmitting = false;
@@ -229,11 +254,15 @@
     // Form submission handler
     document.getElementById('processForm').addEventListener('submit', handleFormSubmit);
 
+    // Register the ChartDataLabels plugin for all charts
+    Chart.register(ChartDataLabels);
+
     function renderData(data) {
-      // Hide the loading message and show the results container
+      // Hide the loading message and info container and show the results container
       document.getElementById('loadingMessage').style.display = 'none';
       // Added logic to hide even if buttons retrigger the startup - it won't display twice
       document.getElementById('loadingMessage').classList.add('hidden');
+      document.getElementById('infoContainer').classList.add('hidden');
 
       // Section 1: Objectives
       document.getElementById('objectives-count').innerText = data.objectiveCount;
@@ -252,12 +281,6 @@
       // Append fragment to the DOM in one go
       objectivesList.appendChild(fragment);
 
-      // Check if the Fade-in class is already added, if not, add it
-      const section1 = document.getElementById('objectives');
-      if (!section1.classList.contains('fade-in-visible')) {
-        section1.classList.add('fade-in-visible');
-      }
-
       // Section 2: Matched vs. Unmatched Chart
       const matchCtx = document.getElementById('matchChart').getContext('2d');
       new Chart(matchCtx, {
@@ -269,19 +292,32 @@
             backgroundColor: ['#4CAF50', '#F44336'],
           }]
         },
-        options: { responsive: true }
+        options: {
+          responsive: true,
+          plugins: {
+            datalabels: {
+              color: '#f5f5f5'
+            }
+          }
+        }
       });
 
-      // Section 3: Match Quality Table
-      const qualityTable = document.getElementById('quality-table');
-      qualityTable.innerHTML = ''; // Clear any existing content
-      data.qualityLabels.forEach((label, index) => {
-        let row = document.createElement('tr');
-        row.innerHTML = `
-          <td class="px-6 py-4 whitespace-nowrap cursor-pointer">${label}</td>
-          <td class="px-6 py-4 whitespace-nowrap cursor-pointer">${data.qualityValues[index]}</td>
-        `;
-        qualityTable.appendChild(row);
+      // Section 3: AAMC Bar Charts logic
+      const chartColors = ['#29B6F6', '#FFA726']; // Light blue, mild orange
+
+      const chartConfigs = [
+        { id: 'chart1', name: 'Patient Care' },
+        { id: 'chart2', name: 'Medical Knowledge' },
+        { id: 'chart3', name: 'Systems-Based Practice' },
+        { id: 'chart4', name: 'Practice-Based Learning and Improvement' },
+        { id: 'chart5', name: 'Professionalism' },
+        { id: 'chart6', name: 'Interpersonal and Communication Skills' }
+      ];
+
+      chartConfigs.forEach((config, index) => {
+        const chartDetails = data.chartData.charts[index];
+        const color = chartColors[index % chartColors.length];
+        createHorizontalBarChart(config.id, config.name, chartDetails.labels, chartDetails.values, chartDetails.tooltips, color);
       });
 
       // Section 4: Match Quality Pie Chart
@@ -295,7 +331,14 @@
             backgroundColor: ['#FFCA28', '#29B6F6', '#AB47BC'],
           }]
         },
-        options: { responsive: true }
+        options: { 
+          responsive: true,
+          plugins: {
+            datalabels: {
+              color: '#f5f5f5'
+            }
+          }
+        }
       });
 
       // Section 5: Excellent Matches
@@ -304,7 +347,14 @@
       data.excellentMatches.forEach(match => {
         let li = document.createElement('li');
         const parts = match.split(':');
-        li.innerHTML = `<strong>${parts[0]}</strong><br><br>AAMC Match: ${parts[1]}`;
+        const scoreSplit = parts[1].split('.');
+        li.innerHTML = `${parts[0]}
+                        <br>
+                        <br>
+                        <div class="subline"><strong>AAMC Match:</strong> ${scoreSplit[0]}.</div>
+                        <br>
+                        <div class="subline"><strong>Match Score</strong> <i>[from 0-1, exact match = 1]</i>: (0.${scoreSplit[2]}</div>
+                        <br>`;
         excellentList.appendChild(li);
       });
 
@@ -323,7 +373,7 @@
       improvementList.innerHTML = ''; // Clear any existing content
       data.improvements.forEach(improvement => {
         let row = document.createElement('tr');
-        row.innerHTML = `<td class="px-6 py-4 whitespace-nowrap cursor-pointer">${improvement}</td>`;
+        row.innerHTML = `<td class="px-6 py-4 whitespace-normal">${improvement}</td>`;
         improvementList.appendChild(row);
       });
 
@@ -348,6 +398,82 @@
     function downloadPDF() {
       const element = document.getElementById('resultsContainer');
       html2pdf().from(element).save();
+    }
+
+    // Function to create the AAMC breakout bar charts
+    function createHorizontalBarChart(canvasId, chartTitle, labels, data, tooltips, barColor) {
+      // DO NOT DELETE THE FOLLOWING FUNCTIONALITY
+      /* Overview of why the following lines exist:
+      * Cannot find appropriate issue / lines in chart.js documentation or stack overflow --
+      * No matter what is done with the datalabels plugin, the chart tries to render both chart.data.labels and chart.options.plugins.datalabels, causing overlap
+      * The only way to get the whitespace needed for multiline labels (necessary for these long strings) is to have multiline labels in chart.data.labels (chartjs sees this as nested array)
+      * But you can't format the alignment of chart.data.labels, but you need the whitespace / multiline alignment from its labels to have space for chart.options.plugins.datalabels
+      * What follows is a crude way to empty the formatted label strings fed to chart.data.labels to create whitespace and newlines as necessary (result: empty nested arrays with space characters)
+      * Allowing us to populate the chart labels seen by the user with only the chart.options.plugins.datalabels content.
+      */
+      const formattedLabels = labels.map(label => {
+                              const chunks = label.match(/.{1,50}/g) || [];
+                              const formattedChunks = chunks.map(chunk => ' '.repeat(100));
+                              return formattedChunks;
+                              });
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: formattedLabels, // How can we pull only the formatted labels from the datalabels plugin and empty this programmatically as needed??
+          datasets: [{
+            label: chartTitle,
+            data: data,
+            backgroundColor: barColor,
+          }]
+        },
+        options: {
+          indexAxis: 'y', // This makes the bars horizontal
+          responsive: true,
+          scales: {
+            x: {  // Changed from invalid `xAxes` to valid `x`
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1 // Ensuring integer steps, should help in showing the bars
+              }
+            },
+            y: {  // Changed from invalid `yAxes` to valid `y`
+              beginAtZero: true,
+              ticks: {
+                z: 1 // Try to display tick values on top of the bars themselves
+              }
+            }
+          },
+          plugins: {
+            datalabels: {
+              formatter: function(value, context) {
+                return labels[context.dataIndex].match(/.{1,50}/g) || []; // Interact directly with unformatted labels to complete regex steps, replace placeholder label strings
+              },
+              align: 'start',
+              textAlign: 'start',              
+              anchor: 'start'
+            },
+            tooltip: {
+              displayColors: false,
+              callbacks: {
+                title: () => 'Matching Program Objectives:',
+                label: (tooltipItem) => {
+                  return tooltips[tooltipItem.dataIndex]
+                    .split('\n')
+                    .map((item, i) => `${i + 1}. ${item}`); // Adds numbering and keeps new-line formatting
+                }
+              }
+            },
+            // This doesn't work as intended.
+            title: {
+              text: chartTitle,
+              font: {
+                size: 18
+              }
+            }
+          }
+        }
+      });
     }
 
   </script>

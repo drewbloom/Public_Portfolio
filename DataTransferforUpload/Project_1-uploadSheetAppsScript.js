@@ -157,169 +157,176 @@ function extractTablePairData(firstTable, secondTable) {
   const tableData = [];
   const errors = [];
 
-  // New lines to check for question status once that change is approved - add brackets over try blocks and an else to return empty tableData and errors
-  const questionStatus = findMarkedValue(extractCellText(secondTable.getRow(14).getCell(1)))
-  if (questionStatus == 'Finalized') {
+  try {
+    // New lines to check for question status once that change is approved - add brackets over try blocks and an else to return empty tableData and errors
+    const questionStatus = findMarkedValue(extractCellText(secondTable.getRow(14).getCell(1)))
+    if (questionStatus == 'Finalized') {
+      try { //Actual: A
+        tableData.push(extractCellText(firstTable.getRow(0).getCell(1)));  // Case to Col A
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'A', error });
+      }
 
-    try { //Actual: A
-      tableData.push(extractCellText(firstTable.getRow(0).getCell(1)));  // Case to Col A
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'A', error });
-    }
+      try {
+        tableData.push(extractCellText(secondTable.getRow(0).getCell(1))); // Vignette to Col B
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'B', error });
+      }
 
-    try {
-      tableData.push(extractCellText(secondTable.getRow(0).getCell(1))); // Vignette to Col B
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'B', error });
-    }
+      try {
+        tableData.push(extractCellText(secondTable.getRow(1).getCell(1))); // Stem to Column C
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'C', error });
+      }
 
-    try {
-      tableData.push(extractCellText(secondTable.getRow(1).getCell(1))); // Stem to Column C
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'C', error });
-    }
+      try {
+        tableData.push("");  // Column D left empty
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'D', error });
+      }
 
-    try {
-      tableData.push("");  // Column D left empty
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'D', error });
-    }
+      try {
+        tableData.push(extractCellText(secondTable.getRow(2).getCell(1)));  // Correct Answer to Column E
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'E', error });
+      }
 
-    try {
-      tableData.push(extractCellText(secondTable.getRow(2).getCell(1)));  // Correct Answer to Column E
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'E', error });
-    }
+      try {
+        tableData.push(extractCellText(secondTable.getRow(3).getCell(1)));  // Choice A to Column F
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'F', error });
+      }
 
-    try {
-      tableData.push(extractCellText(secondTable.getRow(3).getCell(1)));  // Choice A to Column F
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'F', error });
-    }
+      try {
+        tableData.push(extractCellText(secondTable.getRow(4).getCell(1)));  // Choice B to Column G
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'G', error });
+      }
 
-    try {
-      tableData.push(extractCellText(secondTable.getRow(4).getCell(1)));  // Choice B to Column G
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'G', error });
-    }
+      try {
+        tableData.push(extractCellText(secondTable.getRow(5).getCell(1)));  // Choice C to Column H
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'H', error });
+      }
 
-    try {
-      tableData.push(extractCellText(secondTable.getRow(5).getCell(1)));  // Choice C to Column H
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'H', error });
-    }
+      try {
+        tableData.push(extractCellText(secondTable.getRow(6).getCell(1)));  // Choice D to Column I
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'I', error });
+      }
 
-    try {
-      tableData.push(extractCellText(secondTable.getRow(6).getCell(1)));  // Choice D to Column I
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'I', error });
-    }
+      try {
+        tableData.push(extractCellText(secondTable.getRow(7).getCell(1)));  // Choice E to Column J
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'J', error });
+      }
 
-    try {
-      tableData.push(extractCellText(secondTable.getRow(7).getCell(1)));  // Choice E to Column J
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'J', error });
-    }
+      try {
+        tableData.push('Validation now');  // Validation now to Column K
+      } catch (error) {
+        tableData.push(""); // Empty value
+        errors.push({ row: 0, col: 'K', error });
+      }
 
-    try {
-      tableData.push('Validation now');  // Validation now to Column K
-    } catch (error) {
-      tableData.push(""); // Empty value
-      errors.push({ row: 0, col: 'K', error });
-    }
+      try {
+        tableData.push(stripBulletPoints(findMarkedValue(extractCellText(firstTable.getRow(5).getCell(1)))));  // Learning Objective to Column L
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'L', error });
+      }
 
-    try {
-      tableData.push(stripBulletPoints(extractCellText(firstTable.getRow(5).getCell(1))));  // Learning Objective to Column L
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'L', error });
-    }
+      try {
+        tableData.push(""); // Leave Column M blank
+      } catch (error) {
+        tableData.push(""); // Empty value
+        errors.push({ row: 0, col: 'M', error });
+      }
 
-    try {
-      tableData.push(""); // Leave Column M blank
-    } catch (error) {
-      tableData.push(""); // Empty value
-      errors.push({ row: 0, col: 'M', error });
-    }
+      try {
+        tableData.push(extractFirstLine(extractCellText(firstTable.getRow(4).getCell(1))));  // Teaching Point to Column N
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'N', error });
+      }
 
-    try {
-      tableData.push(extractFirstLine(extractCellText(firstTable.getRow(4).getCell(1))));  // Teaching Point to Column N
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'N', error });
-    }
+      try {
+        tableData.push(""); // Leave Column O blank
+      } catch (error) {
+        tableData.push(""); // Empty value
+        errors.push({ row: 0, col: 'O', error });
+      }
 
-    try {
-      tableData.push(""); // Leave Column O blank
-    } catch (error) {
-      tableData.push(""); // Empty value
-      errors.push({ row: 0, col: 'O', error });
-    }
+      try { // Use findMarkedValue to extract only the system marked by the user with an 'x'
+        tableData.push(findMarkedValue(extractCellText(secondTable.getRow(10).getCell(1))));  // System to Column P
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'P', error });
+      }
 
-    try { // Use findMarkedValue to extract only the system marked by the user with an 'x'
-      tableData.push(findMarkedValue(extractCellText(secondTable.getRow(10).getCell(1))));  // System to Column P
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'P', error });
-    }
+      try {
+        tableData.push('PracticeSmart'); // Question Use in Column Q
+      } catch (error) {
+        tableData.push(""); // Empty value
+        errors.push({ row: 0, col: 'Q', error });
+      }
 
-    try {
-      tableData.push('PracticeSmart'); // Question Use in Column Q
-    } catch (error) {
-      tableData.push(""); // Empty value
-      errors.push({ row: 0, col: 'Q', error });
-    }
+      try {
+        tableData.push(extractCellText(secondTable.getRow(13).getCell(1))); // Answer Explanation in Column R
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'O', error });
+      }
 
-    try {
-      tableData.push(extractCellText(secondTable.getRow(13).getCell(1))); // Answer Explanation in Column R
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'O', error });
-    }
+      try { // Regex for x markings
+        tableData.push(findMarkedValue(extractCellText(secondTable.getRow(11).getCell(1)))); // Clinical Focus in Column S
+      } catch (error) {
+        tableData.push(""); // Empty value
+        errors.push({ row: 0, col: 'S', error });
+      }
 
-    try { // Regex for x markings
-      tableData.push(findMarkedValue(extractCellText(secondTable.getRow(11).getCell(1)))); // Clinical Focus in Column S
-    } catch (error) {
-      tableData.push(""); // Empty value
-      errors.push({ row: 0, col: 'S', error });
-    }
+      try {
+        const clinicalDiscipline = (extractCellText(firstTable.getRow(0).getCell(1)).match(/^[^\d]*/) || [""])[0].trim(); // Clinical Discipline in T
+        tableData.push(clinicalDiscipline);
+      } catch (error) {
+        tableData.push(""); 
+        errors.push({ row: 0, col: 'T', error });
+      }
 
-    try {
-      const clinicalDiscipline = (extractCellText(firstTable.getRow(0).getCell(1)).match(/^[^\d]*/) || [""])[0].trim(); // Clinical Discipline in T
-      tableData.push(clinicalDiscipline);
-    } catch (error) {
-      tableData.push(""); 
-      errors.push({ row: 0, col: 'T', error });
-    }
+      // Fill columns (U, V, W) with empty strings
+      tableData.push("");
+      tableData.push("");
+      tableData.push("");
 
-    // Fill columns (U, V, W) with empty strings
-    tableData.push("");
-    tableData.push("");
-    tableData.push("");
+      try { // Regex for x markings
+        tableData.push(findMarkedValue(extractCellText(secondTable.getRow(12).getCell(1)))); // Clinical Location in Column X
+      } catch (error) {
+        tableData.push(""); // Empty value
+        errors.push({ row: 0, col: 'S', error });
+      }
 
-    try { // Regex for x markings
-      tableData.push(findMarkedValue(extractCellText(secondTable.getRow(12).getCell(1)))); // Clinical Location in Column X
-    } catch (error) {
-      tableData.push(""); // Empty value
-      errors.push({ row: 0, col: 'S', error });
-    }
+      Logger.log("Compiled row data: " + JSON.stringify(tableData));
+      return { rowData: tableData, errors };
 
-    Logger.log("Compiled row data: " + JSON.stringify(tableData));
-    return { rowData: tableData, errors };
-  } else {
+    } else {
     // Return empty arrays so the script doesn't log the row
     return { rowData: tableData, errors};
-  }
+    }
+  } catch (error) {
+    // Return an empty array if the table doesn't have a 15th row with question status
+    tableData.push("");
+    errors.push({row: 0, col: 'A', error});
+    return { rowData: tableData, errors};
+  }  
 }
 
 function openSheetInBrowser(sheet) {

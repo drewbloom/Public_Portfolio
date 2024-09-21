@@ -127,79 +127,79 @@
     <div id="loadingMessage" class="mt-4 text-blue-500" style="display: none;">
       Generating your report, this could take some time...
     </div>
+  </div>
 
-    <!-- Results Container - Defaults to hidden -->
-    <div id="resultsContainer" class="mt-4 w-3/4 p-6 bg-white rounded-lg mx-auto border border-gray-300 rounded hidden">
+  <!-- Results Container - Defaults to hidden -->
+  <div id="resultsContainer" class="mt-4 w-3/4 p-6 bg-white rounded-lg mx-auto shadow-md border border-gray-300 rounded hidden">
 
-      <!-- Add the hidden input field for sheetName -->
-      <input type="hidden" id="sheetName" value="">
+    <!-- Add the hidden input field for sheetName -->
+    <input type="hidden" id="sheetName" value="">
 
-      <!-- Section 1: Learning Objectives -->
-      <section id="objectives" class=""> <!-- Removed "fade-in" classes so the PDF downloads without fully scrolling the page, modify as needed if this breaks the display -->
-        <h2 class="text-2xl font-bold mb-2 text-center">Located <span id="objectives-count"></span> program objectives from the file:</h2>
-        <hr class="mb-4">
-        <ol id="objectives-list" class="list-decimal list-inside space-y-2"></ol>
-      </section>
+    <!-- Section 1: Learning Objectives -->
+    <section id="objectives" class=""> <!-- Removed "fade-in" classes so the PDF downloads without fully scrolling the page, modify as needed if this breaks the display -->
+      <h2 class="text-2xl font-bold mb-2 text-center">Located <span id="objectives-count"></span> program objectives from the file:</h2>
+      <hr class="mb-4">
+      <ol id="objectives-list" class="list-decimal list-inside space-y-2"></ol>
+    </section>
 
-      <!-- Section 2: 3D Pie Chart for Matched vs Unmatched Objectives -->
-      <section id="matched-unmatched-chart" class="">
-        <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Matched vs Unmatched Learning Objectives</h2>
-        <hr class="mb-4">
-        <div style="width: 50%; margin: 0 auto;">
-          <canvas id="matchChart"></canvas>
-        </div>
-      </section>
+    <!-- Section 2: 3D Pie Chart for Matched vs Unmatched Objectives -->
+    <section id="matched-unmatched-chart" class="">
+      <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Matched vs Unmatched Learning Objectives</h2>
+      <hr class="mb-4">
+      <div style="width: 50%; margin: 0 auto;">
+        <canvas id="matchChart"></canvas>
+      </div>
+    </section>
 
-      <!-- Section 3: AAMC Matches - Horizontal Bar Charts -->
-      <section id="aamc-bar-charts" class="">
-        <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Matches by AAMC Competency</h2>
-        <hr class="mb-4">
-        <div id="charts-container">
-          <canvas id="chart1"></canvas>
-          <canvas id="chart2"></canvas>
-          <canvas id="chart3"></canvas>
-          <canvas id="chart4"></canvas>
-          <canvas id="chart5"></canvas>
-          <canvas id="chart6"></canvas>
-        </div>
-      </section>
+    <!-- Section 3: AAMC Matches - Horizontal Bar Charts -->
+    <section id="aamc-bar-charts" class="">
+      <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Matches by AAMC Competency</h2>
+      <hr class="mb-4">
+      <div id="charts-container">
+        <canvas id="chart1"></canvas>
+        <canvas id="chart2"></canvas>
+        <canvas id="chart3"></canvas>
+        <canvas id="chart4"></canvas>
+        <canvas id="chart5"></canvas>
+        <canvas id="chart6"></canvas>
+      </div>
+    </section>
 
-      <!-- Section 4: Match Quality Pie Chart -->
-      <section id="match-quality-chart" class="">
-        <h2 class="text-2xl font-bold mb-4 text-center">Match Quality Distribution</h2>
-        <hr class="mb-4">
-        <div style="width: 50%; margin: 0 auto;">
-          <canvas id="qualityChart"></canvas>
-        </div>
-      </section>
+    <!-- Section 4: Match Quality Pie Chart -->
+    <section id="match-quality-chart" class="">
+      <h2 class="text-2xl font-bold mb-4 text-center">Match Quality Distribution</h2>
+      <hr class="mb-4">
+      <div style="width: 50%; margin: 0 auto;">
+        <canvas id="qualityChart"></canvas>
+      </div>
+    </section>
 
-      <!-- Section 5: Excellent Matches -->
-      <section id="excellent-matches" class="">
-        <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Excellent Matches List</h2>
-        <hr class="mb-4">
-        <ol id="excellent-list" class="list-decimal list-inside space-y-2"></ol>
-      </section>
+    <!-- Section 5: Excellent Matches -->
+    <section id="excellent-matches" class="">
+      <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Excellent Matches List</h2>
+      <hr class="mb-4">
+      <ol id="excellent-list" class="list-decimal list-inside space-y-2"></ol>
+    </section>
 
-      <!-- Section 6: Top 5 Most-Aligned Program Objectives -->
-      <section id="top-5-aligned" class="">
-        <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Program Objectives with Most AAMC Matches</h2>
-        <hr class="mb-4">
-        <ol id="top-aligned-list" class="list-decimal list-inside space-y-2"></ol>
-      </section>
+    <!-- Section 6: Top 5 Most-Aligned Program Objectives -->
+    <section id="top-5-aligned" class="">
+      <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Program Objectives with Most AAMC Matches</h2>
+      <hr class="mb-4">
+      <ol id="top-aligned-list" class="list-decimal list-inside space-y-2"></ol>
+    </section>
 
-      <!-- Section 7: MEPO Areas for Improvement -->
-      <section id="mepo-improvement" class="">
-        <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Least-Matched Program Objectives</h2>
-        <hr class="mb-4">
-        <p id="improvement-count" class="mb-2"></p>
-        <div class="overflow-hidden"> <!-- Changed from overflow-x-auto to force wrapping for PDF download -->
-          <table class="min-w-full bg-white border">
-            <tbody id="improvement-list" class="divide-y divide-gray-200"></tbody>
-          </table>
-        </div>
-      </section>
-    
-    </div>
+    <!-- Section 7: MEPO Areas for Improvement -->
+    <section id="mepo-improvement" class="">
+      <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Least-Matched Program Objectives</h2>
+      <hr class="mb-4">
+      <p id="improvement-count" class="mb-2"></p>
+      <div class="overflow-hidden"> <!-- Changed from overflow-x-auto to force wrapping for PDF download -->
+        <table class="min-w-full bg-white border">
+          <tbody id="improvement-list" class="divide-y divide-gray-200"></tbody>
+        </table>
+      </div>
+    </section>
+  
   </div>
 
   <script>
@@ -256,6 +256,10 @@
 
     // Register the ChartDataLabels plugin for all charts
     Chart.register(ChartDataLabels);
+
+    // Set a standard chart font size, color
+    Chart.defaults.font.size = 14;
+    Chart.defaults.color = 'black';
 
     function renderData(data) {
       // Hide the loading message and info container and show the results container
@@ -403,9 +407,10 @@
     // Function to create the AAMC breakout bar charts
     function createHorizontalBarChart(canvasId, chartTitle, labels, data, tooltips, barColor) {
       // DO NOT DELETE THE FOLLOWING FUNCTIONALITY
-      /* Overview of why the following lines exist:
+      /* Overview of why the formattedLabels lines exist:
       * Cannot find appropriate issue / lines in chart.js documentation or stack overflow --
       * No matter what is done with the datalabels plugin, the chart tries to render both chart.data.labels and chart.options.plugins.datalabels, causing overlap
+      * Attempted to resolve by adding labels key to datalabels as well, but then no labels display at all
       * The only way to get the whitespace needed for multiline labels (necessary for these long strings) is to have multiline labels in chart.data.labels (chartjs sees this as nested array)
       * But you can't format the alignment of chart.data.labels, but you need the whitespace / multiline alignment from its labels to have space for chart.options.plugins.datalabels
       * What follows is a crude way to empty the formatted label strings fed to chart.data.labels to create whitespace and newlines as necessary (result: empty nested arrays with space characters)
@@ -414,6 +419,8 @@
       const formattedLabels = labels.map(label => {
                               const chunks = label.match(/.{1,50}/g) || [];
                               const formattedChunks = chunks.map(chunk => ' '.repeat(100));
+                              formattedChunks.push(' '.repeat(100)); // Add another (4th) newline to the container to provide enough vertical space for 3 lines of text
+                              formattedChunks.push(' '.repeat(100)); // Add another (5th) newline - still cramped (will also change label padding for datalabels below)
                               return formattedChunks;
                               });
       const ctx = document.getElementById(canvasId).getContext('2d');
@@ -445,14 +452,25 @@
             }
           },
           plugins: {
-            datalabels: {
+            datalabels: { // Don't add labels key to this level, no labels will show
               formatter: function(value, context) {
-                return labels[context.dataIndex].match(/.{1,50}/g) || []; // Interact directly with unformatted labels to complete regex steps, replace placeholder label strings
+                return labels[context.dataIndex].match(/.{1,50}(?=\s|$)/g) || []; // Create 50-character lines (approx) ending in whitespace as our nested array
               },
-              align: 'start',
-              textAlign: 'start',              
-              anchor: 'start'
+              align: 'left',
+              textAlign: 'left',              
+              anchor: 'start',
+
+              // Added sections to attempt cleaner font and coloring formats
+              color: function(context) {
+                const index = context.dataIndex;
+                if (index % 2) {
+                  return 'black';
+                } else {
+                  return '#4682B4';
+                }
+              }
             },
+            // Tooltip functionality works as intended
             tooltip: {
               displayColors: false,
               callbacks: {
@@ -474,6 +492,10 @@
           }
         }
       });
+
+      // Resize first chart to expand it
+      const aamcChart1 = document.getElementById('chart1');
+      aamcChart1.height = 800
     }
 
   </script>

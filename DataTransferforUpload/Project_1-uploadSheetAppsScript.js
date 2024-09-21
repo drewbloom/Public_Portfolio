@@ -1,5 +1,6 @@
 function onOpen() {
   DocumentApp.getUi().createMenu('Upload Sheet')
+      .addItem('Copyedit Document', 'copyEdit')
       .addItem('Generate Upload Sheet', 'transferToUploadSheet')
       .addToUi();
 }
@@ -462,4 +463,381 @@ function logTableContents(table) {
       Logger.log('Row %s, Cell %s: %s', i, j, cellText);
     }
   }
+}
+
+// Beginning of pre-upload functionality to copyedit document
+/** Goals and functionality
+ * Work element-by-element to maintain most of the document's formatting
+ * Perform all necessary programmatic functions in a loop through the elements
+ * Save every 50 elements by closing and reopening doc
+ * Log every change made by each of the regex / editing functions within the loop using an index
+ */
+function copyEdit() {
+  let doc = DocumentApp.getActiveDocument();
+  const docID = doc.getId();
+  
+  // Get all elements in the document body
+  let body = doc.getBody();
+  const totalElements = body.getNumChildren();
+  const errorElements = [];
+  let element;
+
+  // Loop through each element in the body
+  for (let i = 0; i < totalElements; i++) {
+    element = body.getChild(i);
+    let elementTracker = "";
+    
+    // Check type of element and process accordingly
+    if (element.getType() === DocumentApp.ElementType.PARAGRAPH) {
+      elementTracker = "Paragraph";
+      try {
+        processParagraph(element, i);
+      } catch (error) {
+        Logger.log(`Failed to process element ${i} (${elementTracker}): ${error}`);
+        const elementText = element.getText();
+        if (elementText) {
+          const textSnip = elementText.substring(0,100);
+          errorElements.push(`errorElement ${errorElements.length}: Element ${i} (${elementTracker}):\n${textSnip}`);
+        }
+        continue
+      }
+    } else if (element.getType() === DocumentApp.ElementType.TABLE) {
+      elementTracker = "Table";
+      try {
+        processTables(element, i);
+      } catch (error) {
+        Logger.log(`Failed to process element ${i} (${elementTracker}): ${error}`);
+        const elementText = element.getText();
+        const textSnip = elementText.substring(0,100);
+        errorElements.push(`errorElement ${errorElements.length}: Element ${i} (${elementTracker}):\n${textSnip}`);
+        continue
+      }
+      try {
+        handleTableSpecificTasks(element);
+      } catch (error) {
+        const elementText = element.getText();
+        const textSnip = elementText.substring(0,100);
+        Logger.log(`Failed handleTableSpecificTasks for Table ${i} - Text Snip:\n${textSnip}\nError: ${error}`);
+      }
+    }
+    
+    // Perform save and continue conditionally, if processing too many elements
+    if (i > 0 && i % 50 === 0) {
+      doc.saveAndClose();
+      Logger.log(`Saved and closed document at element ${i}`);
+      try {
+        doc = DocumentApp.openById(docID);
+        body = doc.getBody();
+      } catch (error) {
+        Logger.log(`Error opening Doc ID: ${docID}\n -- ${error}`);
+        throw new Error(`Stopped Script: Error reopening Doc`);
+      }
+    }
+    
+
+    
+    Logger.log(`Completed element ${i} (${elementTracker})`);
+  }
+
+  // Display all elements with errors for examination
+  if (errorElements.length > 0) {
+    Logger.log(`Printing all elements with errors:\n${errorElements.join('\n')}`);
+  }
+
+  Logger.log('Copyediting complete.');
+}
+
+function processParagraph(paragraph, elementIndex) {
+  let text = paragraph.getText();
+  
+  text = removeDoublePeriods(text, elementIndex);
+  text = removeDoubleSpace(text, elementIndex);
+  text = capitalizeFirstWord(text, elementIndex);
+  text = deniesToDNR(text, elementIndex);
+  text = removeTrailingWhitespace(text, elementIndex);
+  text = removeXXX(text, elementIndex);
+  text = changeEKGtoECG(text, elementIndex);
+  text = changeERtoED(text, elementIndex);
+  text = correctXray(text, elementIndex);
+  // Abbreviation highlights are making the test non-text for setText below
+  // text = addAbbreviationHighlights(text, elementIndex);
+  
+  paragraph.setText(text);
+}
+
+function processTables(table, elementIndex) {
+  const numRows = table.getNumRows();
+  const numCols = table.getRow(0).getNumCells();
+
+  for (let r = 0; r < numRows; r++) {
+    for (let c = 0; c < numCols; c++) {
+      const cell = table.getCell(r, c);
+      let text = cell.getText();
+
+      text = removeDoublePeriods(text, elementIndex);
+      text = removeDoubleSpace(text, elementIndex);
+      text = capitalizeFirstWord(text, elementIndex);
+      text = deniesToDNR(text, elementIndex);
+      text = removeTrailingWhitespace(text, elementIndex);
+      text = removeXXX(text, elementIndex);
+      text = changeEKGtoECG(text, elementIndex);
+      text = changeERtoED(text, elementIndex);
+      text = correctXray(text, elementIndex);
+      // Removing highlights for testing
+      // text = addAbbreviationHighlights(text, elementIndex);
+
+      cell.setText(text);
+    }
+  }
+}
+
+// Function to remove highlighting from each paragraph
+function removeHighlighting(docID) {
+  const doc = DocumentApp.openById(docID);
+  const body = doc.getBody();
+  const totalElements = body.getNumChildren();
+
+  for (let i = 0; i < totalElements; i++) {
+    const element = body.getChild(i);
+
+    if (element.getType() === DocumentApp.ElementType.PARAGRAPH) {
+      processRemoveHighlightingFromParagraph(element, i);
+    }
+  }
+
+  Logger.log('Removed all text highlighting.');
+}
+
+function processRemoveHighlightingFromParagraph(paragraph, elementIndex) {
+  const text = paragraph.getText();
+  const textElement = paragraph.editAsText();
+  const length = text.length;
+
+  for (let j = 0; j < length; j++) {
+    textElement.setBackgroundColor(j, j, null);  // Setting background color to null to remove highlighting
+  }
+  
+  Logger.log(`Removed highlighting in paragraph at index ${elementIndex}.`);
+}
+
+// Function to set font for all elements to Arial
+function setSameFont(docID) {
+  const doc = DocumentApp.openById(docID);
+  const body = doc.getBody();
+  const text = body.getText();
+  body.editAsText().setFontFamily('Arial'); // Sets font to Arial
+  Logger.log('Set font to Arial.');
+}
+
+// Helper function to log specific changes
+function logChange(operation, position, textBefore, textAfter) {
+  Logger.log(`${operation} at position ${position}: "${textBefore}" -> "${textAfter}"`);
+}
+
+// Helper functions with regex tasks
+function removeDoublePeriods(text, offset = 0) {
+  const regex = /\.{2,}/g;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    logChange('Removed double periods', offset + match.index, match[0], ".");
+  }
+  return text.replace(regex, ".");
+}
+
+function removeDoubleSpace(text, offset = 0) {
+  const regex = / {2,}/g;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    logChange('Removed double spaces', offset + match.index, match[0], " ");
+  }
+  return text.replace(regex, " ");
+}
+
+// Preserve all whitespace characters but return a capitalized first letter of the next word
+function capitalizeFirstWord(text, offset = 0) {
+  // Regex to match '.', '!', or '?' followed by one or more whitespace characters and a word character
+  const regex = /(\.|\!|\?)\s+(\w)/g;
+  let match;
+  
+  // Use the replace function to capitalize the matched character and log the change
+  let newText = text.replace(regex, function(match, p1, p2, index) {
+    const capitalizedChar = p2.toUpperCase(); 
+    const replacement = p1 + match.slice(p1.length, -1) + capitalizedChar; // Reconstruct the match with the capitalized character
+    logChange('Capitalized first word after punctuation', offset + index, match, replacement);
+    return replacement;
+  });
+  
+  return newText;
+}
+
+function deniesToDNR(text, offset = 0) {
+  const regex = /\bdenies\b/gi;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    logChange('Replaced "denies" with "does not repeat"', offset + match.index, match[0], "does not repeat");
+  }
+  return text.replace(regex, "does not repeat");
+}
+
+function removeTrailingWhitespace(text, offset = 0) {
+  const regex = /\s+$/gm;
+  // Use matchAll to capture all matches
+  const matches = [...text.matchAll(regex)];
+  
+  // Log each change
+  matches.forEach(match => {
+    logChange('Removed trailing whitespace', offset + match.index, match[0], "");
+  });
+
+  // Remove all trailing whitespaces
+  return text.replace(regex, "");
+}
+
+function removeXXX(text, offset = 0) {
+  const regex = /\[xxx\]/gi;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    logChange('Removed [xxx]', offset + match.index, match[0], "");
+  }
+  return text.replace(regex, "");
+}
+
+function changeEKGtoECG(text, offset = 0) {
+  const regex = /\bEKG\b/gi;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    logChange('Replaced "EKG" with "ECG"', offset + match.index, match[0], "ECG");
+  }
+  return text.replace(regex, "ECG");
+}
+
+function changeERtoED(text, offset = 0) {
+  const regexList = [
+    /\bemergency room\b/gi,
+    /\bE\.R\.\b/g,
+    /\bER\b/g,
+    /\bE\.D\.\b/g,
+    /\bEmergency Department\b/g
+  ];
+  let newText = text;
+  regexList.forEach(regex => {
+    let match;
+    while ((match = regex.exec(newText)) !== null) {
+      logChange('Replaced "ER" variants with "emergency department"', offset + match.index, match[0], "emergency department");
+    }
+    newText = newText.replace(regex, "emergency department");
+  });
+  return newText;
+}
+
+function correctXray(text, offset = 0) {
+  const regexList = [
+    /\bX-ray\b/g,
+    /\bX-Ray\b/g,
+    /\bxray\b/g
+  ];
+  let newText = text;
+  regexList.forEach(regex => {
+    let match;
+    while ((match = regex.exec(newText)) !== null) {
+      logChange('Corrected X-ray notation', offset + match.index, match[0], "x-ray");
+    }
+    newText = newText.replace(regex, "x-ray");
+  });
+  return newText;
+}
+
+function addAbbreviationHighlights(text, offset = 0) {
+  const highlightWords = ['MRI', 'ECG', 'ED', 'CT'];
+
+  highlightWords.forEach(word => {
+    let start = 0;
+    while((start = text.indexOf(word, start)) !== -1) {
+      body.editAsText().setBackgroundColor(start, start + word.length - 1, '#FFFF00');  // Highlight in yellow
+      start += word.length;
+      logChange('Highlighted abbreviation', offset + start, word, word);
+    }
+  });
+
+  Logger.log('Highlighted specific abbreviations.');
+}
+
+// Cell-specific task handler for tables
+function handleTableSpecificTasks(table) {
+
+  if (checkTableIdentifier(table)) {
+    // check that it contains Vignette, otherwise skip, then proceed with functions
+    const vignetteCell = table.getCell(0, 1);
+    Logger.log(`VignetteCell Object returned: ${vignetteCell}`);
+    let vignetteText = vignetteCell.getText();
+    vignetteText = changeSexToPatient(vignetteText);
+    vignetteCell.setText(vignetteText);
+
+    // handle Correct Answer
+    const correctAnswerCell = findTableCell(table, "Correct Answer:");
+    if (correctAnswerCell) {
+      Logger.log(`CorrectAnswerCell Object returned: ${correctAnswerCell}`);
+      // const targetCell = table.getCell(correctAnswerCell.getRow(), correctAnswerCell.getCell() + 1);
+      const targetCell = correctAnswerCell.getNextSibling();
+      let answerText = targetCell.getText();
+      answerText = removeCorrectAnswerLettering(answerText);
+      targetCell.setText(answerText);
+    }
+
+    // handle Answer Explanation
+    const explanationCell = findTableCell(table, "Answer Explanation:");
+    if (explanationCell) {
+      Logger.log(`ExplanationCell Object returned: ${explanationCell}`);
+      // const targetCell = table.getCell(explanationCell.getRow(), explanationCell.getCell() + 1);
+      const targetCell = explanationCell.getNextSibling();
+      let explanationText = targetCell.getText();
+      explanationText = removeChoiceLetters(explanationText);
+      targetCell.setText(explanationText);
+    }
+  } else {
+    Logger.log("Table does not have 'Vignette:', continuing to next");
+  }
+  
+}
+
+function checkTableIdentifier(table) {
+  return table.getCell(0, 0).getText() === "Vignette:";
+}
+
+function findTableCell(table, targetText) {
+  for (let r = 0; r < table.getNumRows(); r++) {
+    for (let c = 0; c < table.getRow(r).getNumCells(); c++) {
+      if (table.getCell(r, c).getText() === targetText) {
+        return table.getCell(r,c);
+      }
+    }
+  }
+  return null;
+}
+
+function changeSexToPatient(text) {
+  const regex = /\b(Female|female|Male|male)\b/g;
+  const newText = text.replace(regex, function(match, index) {
+    logChange('Replaced sex with patient in first sentence', index, match, "patient");
+    return "patient";
+  });
+  return newText;
+}
+
+function removeCorrectAnswerLettering(text) {
+  const regex = /^[A-E]\.\s/;
+  const newText = text.replace(regex, function(match, index) {
+    logChange('Removed correct answer lettering', index, match, "");
+    return "";
+  });
+  return newText;
+}
+
+function removeChoiceLetters(text) {
+  const regex = /\bChoice [A-E](: )?\s?/gi;
+  const newText = text.replace(regex, function(match, index) {
+    logChange('Removed choice letters', index, match, "");
+    return "";
+  });
+  return newText;
 }

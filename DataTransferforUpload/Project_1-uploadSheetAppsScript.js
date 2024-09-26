@@ -469,6 +469,7 @@ function logTableContents(table) {
 /** Goals and functionality
  * Work element-by-element to maintain most of the document's formatting
  * Perform all necessary programmatic functions in a loop through the elements
+ * Per feedback, only perform editing functions on "Vignette:" tables (cell 0,0)
  * Save every 50 elements by closing and reopening doc
  * Log every change made by each of the regex / editing functions within the loop using an index
  */
@@ -566,33 +567,41 @@ function processParagraph(paragraph, elementIndex) {
   paragraph.setText(text);
 }
 
+// Edited to ensure process tables only runs on tables with cell (0,0) = "Vignette:"
 function processTables(table, elementIndex) {
-  const numRows = table.getNumRows();
-  const numCols = table.getRow(0).getNumCells();
+  if (!checkVignetteIdentifier(table)) {
+    Logger.log('Table is not a "Vignette:" table, skipping processing');
+    return;
+  } else {
+    Logger.log('Vignette table found, running main copyedits')
+    const numRows = table.getNumRows();
+    const numCols = table.getRow(0).getNumCells();
 
-  for (let r = 0; r < numRows; r++) {
-    for (let c = 0; c < numCols; c++) {
-      const cell = table.getCell(r, c);
-      let text = cell.getText();
+    for (let r = 0; r < numRows; r++) {
+      for (let c = 0; c < numCols; c++) {
+        const cell = table.getCell(r, c);
+        let text = cell.getText();
 
-      text = removeDoublePeriods(text, elementIndex);
-      text = removeDoubleSpace(text, elementIndex);
-      text = capitalizeFirstWord(text, elementIndex);
-      text = deniesToDNR(text, elementIndex);
-      text = removeTrailingWhitespace(text, elementIndex);
-      text = removeXXX(text, elementIndex);
-      text = changeEKGtoECG(text, elementIndex);
-      text = changeERtoED(text, elementIndex);
-      text = correctXray(text, elementIndex);
-      // Removing highlights for testing
-      // text = addAbbreviationHighlights(text, elementIndex);
+        text = removeDoublePeriods(text, elementIndex);
+        text = removeDoubleSpace(text, elementIndex);
+        text = capitalizeFirstWord(text, elementIndex);
+        text = deniesToDNR(text, elementIndex);
+        text = removeTrailingWhitespace(text, elementIndex);
+        text = removeXXX(text, elementIndex);
+        text = changeEKGtoECG(text, elementIndex);
+        text = changeERtoED(text, elementIndex);
+        text = correctXray(text, elementIndex);
+        // Removing highlights for testing
+        // text = addAbbreviationHighlights(text, elementIndex);
 
-      cell.setText(text);
+        cell.setText(text);
+      }
     }
   }
 }
 
 // Function to remove highlighting from each paragraph
+// This function is not being used in the current main loop
 function removeHighlighting(docID) {
   const doc = DocumentApp.openById(docID);
   const body = doc.getBody();
@@ -609,6 +618,7 @@ function removeHighlighting(docID) {
   Logger.log('Removed all text highlighting.');
 }
 
+// This function is not being used in the current main loop
 function processRemoveHighlightingFromParagraph(paragraph, elementIndex) {
   const text = paragraph.getText();
   const textElement = paragraph.editAsText();
@@ -621,7 +631,7 @@ function processRemoveHighlightingFromParagraph(paragraph, elementIndex) {
   Logger.log(`Removed highlighting in paragraph at index ${elementIndex}.`);
 }
 
-// Function to set font for all elements to Arial
+// Function to set font for all elements to Arial size 10
 function setSameFont(docID) {
   const doc = DocumentApp.openById(docID);
   const body = doc.getBody();
@@ -768,11 +778,10 @@ function addAbbreviationHighlights(text, offset = 0) {
 // Cell-specific task handler for tables
 function handleTableSpecificTasks(table) {
 
-  if (checkTableIdentifier(table)) {
+  if (checkVignetteIdentifier(table)) {
     // check that it contains Vignette, otherwise skip, then proceed with functions
-    Logger.log('Table has Vignette, checking cells for edits: Vignette, Correct Answer, Answer Explanation');
+    Logger.log('Now checking specific cells for edits: Vignette, Correct Answer, & Answer Explanation');
     const vignetteCell = table.getCell(0, 1);
-    Logger.log(`VignetteCell Object returned: ${vignetteCell}`);
     let vignetteText = vignetteCell.getText();
     vignetteText = changeSexToPatient(vignetteText);
     vignetteCell.setText(vignetteText);
@@ -780,8 +789,6 @@ function handleTableSpecificTasks(table) {
     // handle Correct Answer
     const correctAnswerCell = findTableCell(table, "Correct Answer:");
     if (correctAnswerCell) {
-      Logger.log(`CorrectAnswerCell Object returned: ${correctAnswerCell}`);
-      // const targetCell = table.getCell(correctAnswerCell.getRow(), correctAnswerCell.getCell() + 1);
       const targetCell = correctAnswerCell.getNextSibling();
       let answerText = targetCell.getText();
       // Pass the string through both regex to pull out "A. " and "Choice A: "
@@ -793,8 +800,6 @@ function handleTableSpecificTasks(table) {
     // handle Answer Explanation
     const explanationCell = findTableCell(table, "Answer Explanation:");
     if (explanationCell) {
-      Logger.log(`ExplanationCell Object returned: ${explanationCell}`);
-      // const targetCell = table.getCell(explanationCell.getRow(), explanationCell.getCell() + 1);
       const targetCell = explanationCell.getNextSibling();
       let explanationText = targetCell.getText();
       explanationText = removeChoiceLetters(explanationText);
@@ -806,7 +811,7 @@ function handleTableSpecificTasks(table) {
   
 }
 
-function checkTableIdentifier(table) {
+function checkVignetteIdentifier(table) {
   return table.getCell(0, 0).getText() === "Vignette:";
 }
 
@@ -847,6 +852,3 @@ function removeChoiceLetters(text) {
   });
   return newText;
 }
-
-// Space for additional functions:
-// Additional revisions: N/A

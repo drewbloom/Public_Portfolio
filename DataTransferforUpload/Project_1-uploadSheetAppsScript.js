@@ -544,6 +544,7 @@ function copyEdit() {
     Logger.log(`Printing all elements with errors:\n${errorElements.join('\n')}`);
   }
 
+  setSameFont(docID);
   Logger.log('Copyediting complete.');
 }
 
@@ -627,6 +628,8 @@ function setSameFont(docID) {
   const text = body.getText();
   body.editAsText().setFontFamily('Arial'); // Sets font to Arial
   Logger.log('Set font to Arial.');
+  body.editAsText().setFontSize(10);
+  Logger.log('Set font size to 10');
 }
 
 // Helper function to log specific changes
@@ -674,9 +677,9 @@ function deniesToDNR(text, offset = 0) {
   const regex = /\bdenies\b/gi;
   let match;
   while ((match = regex.exec(text)) !== null) {
-    logChange('Replaced "denies" with "does not repeat"', offset + match.index, match[0], "does not repeat");
+    logChange('Replaced "denies" with "does not report"', offset + match.index, match[0], "does not report");
   }
-  return text.replace(regex, "does not repeat");
+  return text.replace(regex, "does not report");
 }
 
 function removeTrailingWhitespace(text, offset = 0) {
@@ -767,6 +770,7 @@ function handleTableSpecificTasks(table) {
 
   if (checkTableIdentifier(table)) {
     // check that it contains Vignette, otherwise skip, then proceed with functions
+    Logger.log('Table has Vignette, checking cells for edits: Vignette, Correct Answer, Answer Explanation');
     const vignetteCell = table.getCell(0, 1);
     Logger.log(`VignetteCell Object returned: ${vignetteCell}`);
     let vignetteText = vignetteCell.getText();
@@ -780,6 +784,8 @@ function handleTableSpecificTasks(table) {
       // const targetCell = table.getCell(correctAnswerCell.getRow(), correctAnswerCell.getCell() + 1);
       const targetCell = correctAnswerCell.getNextSibling();
       let answerText = targetCell.getText();
+      // Pass the string through both regex to pull out "A. " and "Choice A: "
+      answerText = removeChoiceLetters(answerText);
       answerText = removeCorrectAnswerLettering(answerText);
       targetCell.setText(answerText);
     }
@@ -841,3 +847,6 @@ function removeChoiceLetters(text) {
   });
   return newText;
 }
+
+// Space for additional functions:
+// Additional revisions: N/A

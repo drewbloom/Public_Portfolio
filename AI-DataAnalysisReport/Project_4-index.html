@@ -61,6 +61,28 @@
       margin-left: 30px; /* Adjust the value as needed */
     }
 
+    /* try to prevent chart clipping when downloading as pdf */
+    canvas {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+
+    /* Avoid page breaks inside these elements */
+    .avoid-page-break {
+      page-break-inside: avoid;
+    }
+
+    /* Ensure consistent formatting by forcing a break after each graph section is completed */
+    .page-break-after {
+      page-break-after: always;
+    }
+
+    /* Subheader styling */
+    h3 {
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
   </style>
 </head>
 <body class="subtle-background flex flex-col items-center justify-center min-h-screen">
@@ -93,7 +115,10 @@
       <section id="disclaimer" class="fade-in fade-in-visible">
         <h2 class="text-2xl font-bold mb-2 text-center">How does it work?</h2>
         <hr class="mb-4">
-        <p>Your file is read by an AI to locate your program objectives. Because there may be errors or inconsistencies due to the AI reader, the objectives located will be included below for your review. Using a text comparison model, those objectives are compared to the new AAMC competencies, and the results are displayed on the webpage below.  You can download the webpage as a pdf after the report is generated.</p>
+        <h3 class="text-center font-bold mb-2"><a href="https://www.loom.com/share/f944ae8d6ae446bdbafbf0a47bae78bc?sid=173751f7-5242-4d20-bc4b-8a9cabadb52d" target="_blank" class="text-blue-500 underline hover:text-blue-700">These video instructions will guide you through the process.</a></h4>
+        <p>Use a file from your Google Drive with "Anyone with the link can view" permissions to provide your program objectives. The file must be a Google Doc or a PDF held on your Google Drive, and the reader will not work unless you hit "Share" - "Anyone with the link can view", then use "Copy link" to submit the document below.</p>
+        <br>
+        <p>Your file is read by an AI to locate your program objectives. Because there may be errors or inconsistencies due to the AI reader, the objectives located will be included below for your review. Using a text comparison model, those objectives are compared to the new AAMC competencies, and the results are displayed on the webpage below.  By hovering your cursor over the AAMC charts, you can see a list of all matching program objectives found for each AAMC competency. Tables are also included beneath each chart to show matching objectives. You can download the webpage as a pdf after the report is generated.</p>
         <br>
         <p>By hitting <span class="text-red-500 font-bold">"Generate Report"</span>, you agree to allow Aquifer to compare your program objectives to the new AAMC competencies using a text comparison model and retain the resulting data for future use.</p>
       </section>
@@ -130,7 +155,8 @@
   </div>
 
   <!-- Results Container - Defaults to hidden -->
-  <div id="resultsContainer" class="mt-4 w-3/4 p-6 bg-white rounded-lg mx-auto shadow-md border border-gray-300 rounded hidden">
+  <div id="resultsContainer" class="mt-4 w-[90%] max-w-[90%] p-6 bg-white rounded-lg mx-auto shadow-md border border-gray-300 hidden">
+  <!-- Former: <div id="resultsContainer" class="mt-4 w-3/4 p-6 bg-white rounded-lg mx-auto shadow-md border border-gray-300 rounded hidden"> -->
 
     <!-- Add the hidden input field for sheetName -->
     <input type="hidden" id="sheetName" value="">
@@ -143,7 +169,7 @@
     </section>
 
     <!-- Section 2: 3D Pie Chart for Matched vs Unmatched Objectives -->
-    <section id="matched-unmatched-chart" class="">
+    <section id="matched-unmatched-chart" class="avoid-page-break">
       <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Matched vs Unmatched Learning Objectives</h2>
       <hr class="mb-4">
       <div style="width: 50%; margin: 0 auto;">
@@ -156,17 +182,52 @@
       <h2 class="text-2xl font-bold mb-4 mt-12 text-center">Matches by AAMC Competency</h2>
       <hr class="mb-4">
       <div id="charts-container">
-        <canvas id="chart1"></canvas>
-        <canvas id="chart2"></canvas>
-        <canvas id="chart3"></canvas>
-        <canvas id="chart4"></canvas>
-        <canvas id="chart5"></canvas>
-        <canvas id="chart6"></canvas>
+
+        <h3 class="text-xl font-semibold mb-2 text-center avoid-page-break">Patient Care</h3>
+        <canvas id="chart1" class="avoid-page-break"></canvas>
+        <div id="table1" class=""></div> <!-- Table for Chart 1 -->
+        <br>
+
+        <h3 class="text-xl font-semibold mb-2 text-center avoid-page-break">Patient Care (cont.)</h3>
+        <canvas id="chart1b" class="avoid-page-break"></canvas> <!-- New canvas for Patient Care (cont.) -->
+        <div id="table1b" class=""></div> <!-- Table for Chart 1b -->
+        <br>
+
+        <h3 class="text-xl font-semibold mb-2 text-center avoid-page-break">Medical Knowledge</h3>
+        <canvas id="chart2" class="avoid-page-break"></canvas>
+        <div id="table2" class=""></div> <!-- Table for Chart 2 -->
+        <br>
+
+        <h3 class="text-xl font-semibold mb-2 text-center avoid-page-break">Systems-Based Practice</h3>
+        <canvas id="chart3" class="avoid-page-break"></canvas>
+        <div id="table3" class=""></div> <!-- Table for Chart 3 -->
+        <br>
+
+        <h3 class="text-xl font-semibold mb-2 text-center avoid-page-break">Practice-Based Learning and Improvement</h3>
+        <canvas id="chart4" class="avoid-page-break"></canvas>
+        <div id="table4" class=""></div> <!-- Table for Chart 4 -->
+        <br>
+
+        <h3 class="text-xl font-semibold mb-2 text-center avoid-page-break">Professionalism</h3>
+        <canvas id="chart5" class="avoid-page-break"></canvas>
+        <div id="table5" class=""></div> <!-- Table for Chart 5 -->
+        <br>
+
+        <h3 class="text-xl font-semibold mb-2 text-center avoid-page-break">Professionalism (cont.)</h3>
+        <canvas id="chart5b" class="avoid-page-break"></canvas> <!-- New canvas for Professionalism (cont.) -->
+        <div id="table5b" class=""></div> <!-- Table for Chart 5b -->
+        <br>
+
+        <h3 class="text-xl font-semibold mb-2 text-center avoid-page-break">Interpersonal and Communication Skills</h3>
+        <canvas id="chart6" class="avoid-page-break"></canvas>
+        <div id="table6" class=""></div> <!-- Table for Chart 6 -->
+        <br>
+
       </div>
     </section>
 
     <!-- Section 4: Match Quality Pie Chart -->
-    <section id="match-quality-chart" class="">
+    <section id="match-quality-chart" class="avoid-page-break">
       <h2 class="text-2xl font-bold mb-4 text-center">Match Quality Distribution</h2>
       <hr class="mb-4">
       <div style="width: 50%; margin: 0 auto;">
@@ -307,21 +368,36 @@
       });
 
       // Section 3: AAMC Bar Charts logic
-      const chartColors = ['#29B6F6', '#FFA726']; // Light blue, mild orange
+      // Former color scheme, replaced once added 2 more: const chartColors = ['#29B6F6', '#FFA726']; // Light blue, mild orange
+      const chartColors = [
+        '#29B6F6',  // Chart 1: Patient Care
+        '#29B6F6',  // Chart 1b: Patient Care (cont.) - same color as Patient Care
+        '#FFA726',  // Chart 2: Medical Knowledge
+        '#7E57C2',  // Chart 3: Systems-Based Practice
+        '#43A047',  // Chart 4: Practice-Based Learning and Improvement
+        '#FFCA28',  // Chart 5: Professionalism
+        '#FFCA28',  // Chart 5b: Professionalism (cont.) - same color as Professionalism
+        '#F44336'   // Chart 6: Interpersonal and Communication Skills
+      ];
 
       const chartConfigs = [
         { id: 'chart1', name: 'Patient Care' },
+        { id: 'chart1b', name: 'Patient Care (cont.)' },
         { id: 'chart2', name: 'Medical Knowledge' },
         { id: 'chart3', name: 'Systems-Based Practice' },
         { id: 'chart4', name: 'Practice-Based Learning and Improvement' },
         { id: 'chart5', name: 'Professionalism' },
+        { id: 'chart5b', name: 'Professionalism (cont.)' },
         { id: 'chart6', name: 'Interpersonal and Communication Skills' }
       ];
 
       chartConfigs.forEach((config, index) => {
         const chartDetails = data.chartData.charts[index];
-        const color = chartColors[index % chartColors.length];
+        const color = chartColors[index];
         createHorizontalBarChart(config.id, config.name, chartDetails.labels, chartDetails.values, chartDetails.tooltips, color);
+
+        // Create tables for each chart to display data even in pdf download
+        createDataTable(config.id, chartDetails.labels, chartDetails.tooltips, config.name);
       });
 
       // Section 4: Match Quality Pie Chart
@@ -399,9 +475,32 @@
       document.getElementById('download').style.display = 'inline-block';
     }
 
+    /*
+    // Enhanced PDF download to pull better resolution and a wider container, no clipping of elements
     function downloadPDF() {
       const element = document.getElementById('resultsContainer');
-      html2pdf().from(element).save();
+      const opt = {
+        margin:       0,
+        filename:     'myReport.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, scrollX: 0, scrollY: 0 },
+        jsPDF:        { unit: 'pt', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+    */
+
+    // New PDF download attempt to widen page and add top and bottom margins
+    function downloadPDF() {
+      const element = document.getElementById('resultsContainer');
+      const opt = {
+        margin:       [10, 0, 10, 0], // Reduces top and bottom margins
+        filename:     'myReport.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, scrollX: 0, scrollY: 0 },
+        jsPDF:        { unit: 'pt', format: 'legal', orientation: 'portrait' } // Change to 'legal' for wider Sizing
+      };
+      html2pdf().set(opt).from(element).save();
     }
 
     // Function to create the AAMC breakout bar charts
@@ -496,6 +595,38 @@
       // Resize first chart to expand it
       const aamcChart1 = document.getElementById('chart1');
       aamcChart1.height = 800
+    }
+
+    /*
+    function createDataTable(id, labels, tooltips, chartName) {
+      const tableDiv = document.getElementById(`table${id.replace('chart', '')}`);
+      let tableHTML = `<table class="min-w-full bg-white border"><thead><tr><th class="px-6 py-3 border-b-2">${chartName} Competency</th><th class="px-6 py-3 border-b-2">Matching Program Objectives</th></tr></thead><tbody>`;
+      labels.forEach((label, index) => {
+                tableHTML += `<tr><td class="px-6 py-4 border-b">${label}</td><td class="px-6 py-4 border-b">${tooltips[index].split('\n').map(item => '\u2022 ' + item).join('<br>')}</td></tr>`;
+      });
+      tableHTML += '</tbody></table>';
+      tableDiv.innerHTML = tableHTML;
+    }
+    */
+
+    function createDataTable(id, labels, tooltips, chartName) {
+      const tableDiv = document.getElementById(`table${id.replace('chart', '')}`);
+      let tableHTML = `<table class="min-w-full bg-white border" style="font-size: 10px;"> <!-- Added style to change font-size to 10px --> 
+                        <thead>
+                          <tr>
+                            <th class="px-6 py-3 border-b-2">${chartName} Competency</th>
+                            <th class="px-6 py-3 border-b-2">Matching Program Objectives</th>
+                          </tr>
+                        </thead>
+                        <tbody>`;
+      labels.forEach((label, index) => {
+        tableHTML += `<tr>
+                        <td class="px-6 py-4 border-b">${label}</td>
+                        <td class="px-6 py-4 border-b">${tooltips[index].split('\n').map(item => '\u2022 ' + item).join('<br>')}</td>
+                      </tr>`;
+      });
+      tableHTML += '</tbody></table>';
+      tableDiv.innerHTML = tableHTML;
     }
 
   </script>

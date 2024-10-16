@@ -6,7 +6,7 @@ function onOpen() {
       .addToUi();
   }
   
-// Drew's Key, replace if needed
+// Personal User Key, replace if needed
 const OPENAI_API_KEY = 'MY_OPENAI_API_KEY';  
   
 // Function to get embeddings from OpenAI API
